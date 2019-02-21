@@ -1,7 +1,6 @@
 package com.stackroute.keepnote.aspectj;
 
 import java.util.Arrays;
-
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -13,24 +12,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-/* Annotate this class with @Aspect and @Component */
 @Aspect
 @Component
 public class LoggingAspect {
 	private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
 
 	/*
-	 * Write loggers for each of the methods of User controller, any particular
-	 * method will have all the four aspectJ annotation
+	 * Write loggers for each of the methods of controller, any particular method
+	 * will have all the four aspectJ annotation
 	 * (@Before, @After, @AfterReturning, @AfterThrowing).
 	 */
-	@Pointcut("execution (* com.stackroute.keepnote.controller.UserController.*(..))")
+
+	@Pointcut("execution (* com.stackroute.keepnote.controller.UserAuthenticationController.*(..))")
 	public void allControllerMethods() {
 	}
 
 	@Before("allControllerMethods()")
 	public void beforeAdvice(JoinPoint joinPoint) {
-		logger.info("************UserService Aspect @Before ************");
+		logger.info("************UserAuthentication Aspect @Before ************");
 		logger.debug("Method Name : " + joinPoint.getSignature().getName());
 		logger.debug("Method Args : " + Arrays.toString(joinPoint.getArgs()));
 		logger.info("*********************************");
@@ -38,7 +37,7 @@ public class LoggingAspect {
 
 	@After("allControllerMethods()")
 	public void afterAdvice(JoinPoint joinPoint) {
-		logger.info("************UserService Aspect @After ************");
+		logger.info("************UserAuthentication Aspect @After ************");
 		logger.debug("Method Name : " + joinPoint.getSignature().getName());
 		logger.debug("Method Args : " + Arrays.toString(joinPoint.getArgs()));
 		logger.info("*********************************");
@@ -46,7 +45,7 @@ public class LoggingAspect {
 
 	@AfterReturning(value = "allControllerMethods()", returning = "result")
 	public void afterReturningAdvice(JoinPoint joinPoint, Object result) {
-		logger.info("************UserService Aspect @AfterReturning ************");
+		logger.info("************UserAuthentication Aspect @AfterReturning ************");
 		logger.debug("Method Name : " + joinPoint.getSignature().getName());
 		logger.debug("Method arguments : " + Arrays.toString(joinPoint.getArgs()));
 		logger.debug("Return Value: " + result);
@@ -55,7 +54,7 @@ public class LoggingAspect {
 
 	@AfterThrowing(value = "allControllerMethods()", throwing = "error")
 	public void afterThrowingAdvice(JoinPoint joinPoint, Throwable error) {
-		logger.info("************UserService Aspect @AfterThrowing ************");
+		logger.info("************UserAuthentication Aspect @AfterThrowing ************");
 		logger.debug("Method Name : " + joinPoint.getSignature().getName());
 		logger.debug("Method arguments : " + Arrays.toString(joinPoint.getArgs()));
 		logger.debug("Exception : " + error);
