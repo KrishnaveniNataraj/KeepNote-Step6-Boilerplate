@@ -3,6 +3,10 @@ package com.stackroute.keepnote.model;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document
 public class Note {
 
 	/*
@@ -14,6 +18,8 @@ public class Note {
 	 * but should be always initialized with the system date.
 	 * 
 	 */
+
+	@Id
 	private int noteId;
 	private String noteTitle;
 	private String noteContent;
@@ -96,5 +102,4 @@ public class Note {
 				+ ", noteCreatedBy='" + noteCreatedBy + '\'' + ", category=" + category + ", reminders=" + reminders
 				+ '}';
 	}
-
 }

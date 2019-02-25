@@ -27,66 +27,66 @@ import com.stackroute.keepnote.repository.NoteRepository;
 public class NoteServiceImpl implements NoteService {
 
 	/*
-	 * Autowiring should be implemented for the NoteRepository and MongoOperation.
-	 * (Use Constructor-based autowiring) Please note that we should not create any
+	 * Autowiring should be implemented for the repository and MongoOperation. (Use
+	 * Constructor-based autowiring) Please note that we should not create any
 	 * object using the new keyword.
 	 */
+
 	@Autowired
-	private NoteRepository noteRepository;
+	NoteRepository repository;
 	private NoteUser noteUser = null;
 	private List<Note> notes = null;
 
-	@Autowired
-	public NoteServiceImpl(NoteRepository noteRepository) {
-		this.noteRepository = noteRepository;
-
+	public NoteServiceImpl(NoteRepository repository) {
+		this.repository = repository;
 	}
 
 	/*
 	 * This method should be used to save a new note.
 	 */
-	@Override
 	public boolean createNote(Note note) {
 		int counter = 1;
-		boolean noteCreated = false;
+		boolean status = false;
 		noteUser = new NoteUser();
 		notes = new ArrayList<>();
 		note.setNoteCreationDate(new Date());
-		if (noteRepository.existsById(note.getNoteCreatedBy())) {
-			notes = noteRepository.findById(note.getNoteCreatedBy()).get().getNotes();
+		if (repository.existsById(note.getNoteCreatedBy())) {
+			notes = repository.findById(note.getNoteCreatedBy()).get().getNotes();
 
 			Iterator iterator = notes.iterator();
 			Note note1 = new Note();
 			while (iterator.hasNext()) {
+
 				note1 = (Note) iterator.next();
 			}
 			note.setNoteId(note1.getNoteId() + counter);
 			notes.add(note);
 			noteUser.setUserId(note.getNoteCreatedBy());
 			noteUser.setNotes(notes);
-			if (noteRepository.save(noteUser) != null) {
-				noteCreated = true;
+			if (repository.save(noteUser) != null) {
+
+				status = true;
 			}
 		} else {
+
 			note.setNoteId(counter);
 			notes.add(note);
 			noteUser.setUserId(note.getNoteCreatedBy());
 			noteUser.setNotes(notes);
 
-			if (noteRepository.insert(noteUser) != null) {
-				noteCreated = true;
+			if (repository.insert(noteUser) != null) {
+				status = true;
 			}
 		}
-		return noteCreated;
+		return status;
 	}
 
 	/* This method should be used to delete an existing note. */
-	@Override
-	public boolean deleteNote(String userId, int noteId) {
 
-		boolean noteDeleted = false;
+	public boolean deleteNote(String userId, int noteId) {
+		boolean status = false;
 		noteUser = new NoteUser();
-		notes = noteRepository.findById(userId).get().getNotes();
+		notes = repository.findById(userId).get().getNotes();
 
 		if (!notes.isEmpty()) {
 
@@ -101,59 +101,62 @@ public class NoteServiceImpl implements NoteService {
 
 			noteUser.setUserId(userId);
 			noteUser.setNotes(notes);
-			noteRepository.save(noteUser);
-			noteDeleted = true;
+			repository.save(noteUser);
+			status = true;
 		}
 
-		return noteDeleted;
+		return status;
 	}
 
 	/* This method should be used to delete all notes with specific userId. */
-	@Override
-	public boolean deleteAllNotes(String userId) throws NoteNotFoundExeption {
 
-		boolean allNotesDeleted = false;
+	public boolean deleteAllNotes(String userId) throws NoteNotFoundExeption {
+		boolean status = false;
 		noteUser = new NoteUser();
 		try {
-			notes = noteRepository.findById(userId).get().getNotes();
+			notes = repository.findById(userId).get().getNotes();
 			if (notes != null) {
+
 				Iterator iterator = notes.listIterator();
 				while (iterator.hasNext()) {
+
 					iterator.next();
 					iterator.remove();
+
 				}
 
 				noteUser.setUserId(userId);
 				noteUser.setNotes(notes);
-				noteRepository.save(noteUser);
-				allNotesDeleted = true;
+				repository.save(noteUser);
+				status = true;
+
 			}
 
 		} catch (NoSuchElementException exception) {
+
 			throw new NoteNotFoundExeption("Note not found");
 		}
 
-		return allNotesDeleted;
+		return status;
 	}
 
 	/*
 	 * This method should be used to update a existing note.
 	 */
-	@Override
-	public Note updateNote(Note note, int noteId, String userId) throws NoteNotFoundExeption {
+	public Note updateNote(Note note, int id, String userId) throws NoteNotFoundExeption {
 
 		Note fetchedNote = null;
 		noteUser = new NoteUser();
 		try {
 
-			notes = noteRepository.findById(userId).get().getNotes();
+			notes = repository.findById(userId).get().getNotes();
 			if (!notes.isEmpty()) {
 
 				Iterator iterator = notes.listIterator();
 				while (iterator.hasNext()) {
 
 					fetchedNote = (Note) iterator.next();
-					if (fetchedNote.getNoteId() == noteId) {
+					if (fetchedNote.getNoteId() == id) {
 						fetchedNote.setNoteId(fetchedNote.getNoteId());
 						fetchedNote.setNoteTitle(note.getNoteTitle());
 						fetchedNote.setNoteContent(note.getNoteContent());
@@ -163,45 +166,49 @@ public class NoteServiceImpl implements NoteService {
 						fetchedNote.setReminders(note.getReminders());
 						break;
 					}
+
 				}
 
-				if (fetchedNote.getNoteId() != noteId) {
+				if (fetchedNote.getNoteId() != id) {
 					throw new NoteNotFoundExeption("Note does not exists");
 				} else {
+
 					noteUser.setUserId(userId);
 					noteUser.setNotes(notes);
-					noteRepository.save(noteUser);
+					repository.save(noteUser);
 				}
 
 			}
 
 		} catch (NoSuchElementException exception) {
+
 			throw new NoteNotFoundExeption("Note does not exists");
 		}
 
 		return fetchedNote;
-
 	}
 
 	/*
 	 * This method should be used to get a note by noteId created by specific user
 	 */
-	@Override
 	public Note getNoteByNoteId(String userId, int noteId) throws NoteNotFoundExeption {
 
 		Note fetchedNote = new Note();
 
 		try {
-			notes = noteRepository.findById(userId).get().getNotes();
+			notes = repository.findById(userId).get().getNotes();
 
 			Iterator iterator = notes.listIterator();
 			while (iterator.hasNext()) {
+
 				fetchedNote = (Note) iterator.next();
 				if (fetchedNote.getNoteId() == noteId)
 					break;
+
 			}
 
 			if (fetchedNote.getNoteId() != noteId) {
+
 				throw new NoteNotFoundExeption("Note does not exists");
 			}
 
@@ -215,9 +222,10 @@ public class NoteServiceImpl implements NoteService {
 	/*
 	 * This method should be used to get all notes with specific userId.
 	 */
-	@Override
 	public List<Note> getAllNoteByUserId(String userId) {
-		List<Note> allNotes = noteRepository.findById(userId).get().getNotes();
+
+		List<Note> allNotes = repository.findById(userId).get().getNotes();
+
 		return allNotes;
 	}
 

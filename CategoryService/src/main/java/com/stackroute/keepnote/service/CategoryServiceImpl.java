@@ -30,9 +30,10 @@ public class CategoryServiceImpl implements CategoryService {
 	 * Constructor-based autowiring) Please note that we should not create any
 	 * object using the new keyword.
 	 */
-	private CategoryRepository categoryRepository;
-
-	@Autowired
+	
+	@Autowired 
+	CategoryRepository categoryRepository;
+	
 	public CategoryServiceImpl(CategoryRepository categoryRepository) {
 		this.categoryRepository = categoryRepository;
 	}
@@ -41,48 +42,40 @@ public class CategoryServiceImpl implements CategoryService {
 	 * This method should be used to save a new category.Call the corresponding
 	 * method of Respository interface.
 	 */
-	@Override
 	public Category createCategory(Category category) throws CategoryNotCreatedException {
-		category.setCategoryCreationDate(new Date());
-		Category categoryCreated = categoryRepository.insert(category);
-		if (categoryCreated == null) {
-			throw new CategoryNotCreatedException("Unable to create new Category");
-		}
-		return categoryCreated;
+
+		Category cat = categoryRepository.insert(category);
+		if (cat == null)
+			throw new CategoryNotCreatedException("Cat not created");
+		return cat;
 	}
 
 	/*
 	 * This method should be used to delete an existing category.Call the
 	 * corresponding method of Respository interface.
 	 */
-	@Override
 	public boolean deleteCategory(String categoryId) throws CategoryDoesNoteExistsException {
-		boolean categoryDeleted = false;
-		Category fetchedCategory = categoryRepository.findById(categoryId).get();
-		if (fetchedCategory == null) {
-			throw new CategoryDoesNoteExistsException("Category with given name does not exists " + categoryId);
 
-		} else {
-			categoryRepository.delete(fetchedCategory);
-			categoryDeleted = true;
+		if (!categoryRepository.findById(categoryId).isPresent()) {
+			throw new CategoryDoesNoteExistsException("Category does not exist");
 		}
-		return categoryDeleted;
+		categoryRepository.deleteById(categoryId);
+		return true;
 	}
 
 	/*
 	 * This method should be used to update a existing category.Call the
 	 * corresponding method of Respository interface.
 	 */
-	@Override
 	public Category updateCategory(Category category, String categoryId) {
 
 		Category fetchedCategory = categoryRepository.findById(categoryId).get();
+		// fetchedCategory.setCategoryId(fetchedCategory.getCategoryId());
 		fetchedCategory.setCategoryName(category.getCategoryName());
 		fetchedCategory.setCategoryDescription(category.getCategoryDescription());
 		fetchedCategory.setCategoryCreatedBy(category.getCategoryCreatedBy());
 		fetchedCategory.setCategoryCreationDate(new Date());
 		categoryRepository.save(fetchedCategory);
-
 		return fetchedCategory;
 	}
 
@@ -90,26 +83,26 @@ public class CategoryServiceImpl implements CategoryService {
 	 * This method should be used to get a category by categoryId.Call the
 	 * corresponding method of Respository interface.
 	 */
-	@Override
 	public Category getCategoryById(String categoryId) throws CategoryNotFoundException {
 
 		try {
-			Category fetchedCategory = categoryRepository.findById(categoryId).get();
-
-			return fetchedCategory;
+			return categoryRepository.findById(categoryId).get();
 		} catch (NoSuchElementException e) {
-			throw new CategoryNotFoundException("Category does not exists");
+			throw new CategoryNotFoundException("Category not found");
 		}
-
 	}
 
 	/*
 	 * This method should be used to get a category by userId.Call the corresponding
 	 * method of Respository interface.
 	 */
-	@Override
 	public List<Category> getAllCategoryByUserId(String userId) {
+
 		return categoryRepository.findAllCategoryByCategoryCreatedBy(userId);
+	}
+	
+	public List<Category> getAllCategory() {
+		return categoryRepository.findAll();      
 	}
 
 }

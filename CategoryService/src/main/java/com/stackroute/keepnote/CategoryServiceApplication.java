@@ -7,6 +7,14 @@ import org.springframework.context.annotation.Bean;
 
 import com.stackroute.keepnote.jwtfilter.JwtFilter;
 
+import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
 /*
  * The @SpringBootApplication annotation is equivalent to using @Configuration, @EnableAutoConfiguration 
  * and @ComponentScan with their default attributes
@@ -15,6 +23,9 @@ import com.stackroute.keepnote.jwtfilter.JwtFilter;
 @SpringBootApplication
 public class CategoryServiceApplication {
 
+	
+	
+
 	/*
 	 * Define the bean for Filter registration. Create a new FilterRegistrationBean
 	 * object and use setFilter() method to set new instance of JwtFilter object.
@@ -22,12 +33,14 @@ public class CategoryServiceApplication {
 	 */
 	@Bean
 	public FilterRegistrationBean jwtFilter() {
-		final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+		final FilterRegistrationBean<JwtFilter> registrationBean = new FilterRegistrationBean<>();
 		registrationBean.setFilter(new JwtFilter());
 		registrationBean.addUrlPatterns("/api/v1/*");
 		return registrationBean;
 	}
-
+	
+	
+	
 	/*
 	 * 
 	 * You need to run SpringApplication.run, because this method start whole spring
@@ -37,4 +50,5 @@ public class CategoryServiceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(CategoryServiceApplication.class, args);
 	}
+	
 }

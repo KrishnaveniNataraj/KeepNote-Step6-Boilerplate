@@ -29,6 +29,7 @@ public class JwtFilter extends GenericFilterBean {
 	 * from the token using the secret key Set the request attribute with the
 	 * retrieved claims Call FilterChain object's doFilter() method
 	 */
+
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
@@ -41,7 +42,7 @@ public class JwtFilter extends GenericFilterBean {
 			chain.doFilter(req, res);
 		} else {
 			if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-				throw new ServletException("Missing or invalid Authorization header for Reminder Service");
+				throw new ServletException("Missing or invalid Authorization header");
 			}
 			final String token = authHeader.substring(7);
 			final Claims claims = Jwts.parser().setSigningKey("secretkey").parseClaimsJws(token).getBody();

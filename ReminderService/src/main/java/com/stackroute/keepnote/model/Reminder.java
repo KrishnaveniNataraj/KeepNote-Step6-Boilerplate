@@ -22,6 +22,7 @@ public class Reminder {
 	 * be accepted from the user but should be always initialized with the system
 	 * date.
 	 */
+
 	@Id
 	private String reminderId;
 	private String reminderName;
@@ -79,11 +80,58 @@ public class Reminder {
 	}
 
 	@Override
-	public String toString() {
-		return "Reminder{" + "reminderId='" + reminderId + '\'' + ", reminderName='" + reminderName + '\''
-				+ ", reminderDescription='" + reminderDescription + '\'' + ", reminderType='" + reminderType + '\''
-				+ ", reminderCreatedBy='" + reminderCreatedBy + '\'' + ", reminderCreationDate=" + reminderCreationDate
-				+ '}';
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((reminderCreatedBy == null) ? 0 : reminderCreatedBy.hashCode());
+		result = prime * result + ((reminderCreationDate == null) ? 0 : reminderCreationDate.hashCode());
+		result = prime * result + ((reminderDescription == null) ? 0 : reminderDescription.hashCode());
+		result = prime * result + ((reminderId == null) ? 0 : reminderId.hashCode());
+		result = prime * result + ((reminderName == null) ? 0 : reminderName.hashCode());
+		result = prime * result + ((reminderType == null) ? 0 : reminderType.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Reminder other = (Reminder) obj;
+		if (reminderCreatedBy == null) {
+			if (other.reminderCreatedBy != null)
+				return false;
+		} else if (!reminderCreatedBy.equals(other.reminderCreatedBy))
+			return false;
+		if (reminderCreationDate == null) {
+			if (other.reminderCreationDate != null)
+				return false;
+		} else if (!reminderCreationDate.equals(other.reminderCreationDate))
+			return false;
+		if (reminderDescription == null) {
+			if (other.reminderDescription != null)
+				return false;
+		} else if (!reminderDescription.equals(other.reminderDescription))
+			return false;
+		if (reminderId == null) {
+			if (other.reminderId != null)
+				return false;
+		} else if (!reminderId.equals(other.reminderId))
+			return false;
+		if (reminderName == null) {
+			if (other.reminderName != null)
+				return false;
+		} else if (!reminderName.equals(other.reminderName))
+			return false;
+		if (reminderType == null) {
+			if (other.reminderType != null)
+				return false;
+		} else if (!reminderType.equals(other.reminderType))
+			return false;
+		return true;
 	}
 
 }

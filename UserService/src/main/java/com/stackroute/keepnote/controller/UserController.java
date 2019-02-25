@@ -17,6 +17,9 @@ import com.stackroute.keepnote.exceptions.UserNotFoundException;
 import com.stackroute.keepnote.model.User;
 import com.stackroute.keepnote.service.UserService;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+
 /*
  * As in this assignment, we are working on creating RESTful web service, hence annotate
  * the class with @RestController annotation. A class annotated with the @Controller annotation
@@ -27,6 +30,7 @@ import com.stackroute.keepnote.service.UserService;
  */
 @RestController
 @RequestMapping("/api/v1/user")
+@Api
 public class UserController {
 
 	/*
@@ -34,11 +38,16 @@ public class UserController {
 	 * autowiring) Please note that we should not create an object using the new
 	 * keyword
 	 */
-	private UserService userService;
+
+	UserService service;
+	
+	public UserController() {
+		
+	}
 
 	@Autowired
-	public UserController(UserService userService) {
-		this.userService = userService;
+	public UserController(UserService service) {
+		this.service = service;
 	}
 
 	/*
@@ -51,16 +60,15 @@ public class UserController {
 	 * 
 	 * This handler method should map to the URL "/user" using HTTP POST method
 	 */
-	@PostMapping()
-	public ResponseEntity<?> registerUser(@RequestBody User user) {
-		ResponseEntity responseEntity = null;
+	@ApiOperation(value = "Register a user")
+	@PostMapping
+	public ResponseEntity<String> create(@RequestBody User user) {
 		try {
-			userService.registerUser(user);
-			responseEntity = new ResponseEntity(HttpStatus.CREATED);
+			service.registerUser(user);
+			return new ResponseEntity<String>("Created", HttpStatus.CREATED);
 		} catch (UserAlreadyExistsException e) {
-			responseEntity = new ResponseEntity(e.getMessage(), HttpStatus.CONFLICT);
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.CONFLICT);
 		}
-		return responseEntity;
 	}
 
 	/*
@@ -73,19 +81,14 @@ public class UserController {
 	 * This handler method should map to the URL "/api/v1/user/{id}" using HTTP PUT
 	 * method.
 	 */
+	@ApiOperation(value = "Update a user")
 	@PutMapping("/{userId}")
-	public ResponseEntity updateUser(@PathVariable() String userId, @RequestBody User user) {
-
-		ResponseEntity responseEntity = null;
-
+	public ResponseEntity<?> update(@PathVariable() String userId, @RequestBody User user) {
 		try {
-			User fetchedUser = userService.updateUser(userId, user);
-			responseEntity = new ResponseEntity(fetchedUser, HttpStatus.OK);
+			return new ResponseEntity<User>(service.updateUser(userId, user), HttpStatus.OK);
 		} catch (UserNotFoundException exception) {
-			responseEntity = new ResponseEntity(exception.getMessage(), HttpStatus.NOT_FOUND);
+			return new ResponseEntity<String>(exception.getMessage(), HttpStatus.NOT_FOUND);
 		}
-
-		return responseEntity;
 	}
 
 	/*
@@ -97,18 +100,15 @@ public class UserController {
 	 * This handler method should map to the URL "/api/v1/user/{id}" using HTTP
 	 * Delete method" where "id" should be replaced by a valid userId without {}
 	 */
+	@ApiOperation(value = "Delete a user")
 	@DeleteMapping("/{id}")
-	public ResponseEntity<?> deleteUser(@PathVariable() String id) {
-		ResponseEntity responseEntity = null;
-
+	public ResponseEntity<String> delete(@PathVariable() String id) {
 		try {
-			userService.deleteUser(id);
-			responseEntity = new ResponseEntity<>("Successfully Deleted User with id: " + id, HttpStatus.OK);
+			service.deleteUser(id);
+			return new ResponseEntity<String>("Successfully Deleted User with id: " + id, HttpStatus.OK);
 		} catch (UserNotFoundException exception) {
-			responseEntity = new ResponseEntity(exception.getMessage(), HttpStatus.NOT_FOUND);
+			return new ResponseEntity<String>(exception.getMessage(), HttpStatus.NOT_FOUND);
 		}
-
-		return responseEntity;
 	}
 
 	/*
@@ -119,17 +119,14 @@ public class UserController {
 	 * should map to the URL "/api/v1/user/{id}" using HTTP GET method where "id"
 	 * should be replaced by a valid userId without {}
 	 */
+	@ApiOperation(value = "Retrieve a user details")
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getUserById(@PathVariable() String id) {
-		ResponseEntity responseEntity = null;
 		try {
-			User fetchedUser = userService.getUserById(id);
-			responseEntity = new ResponseEntity(fetchedUser, HttpStatus.OK);
-
+			return new ResponseEntity<User>(service.getUserById(id), HttpStatus.OK);
 		} catch (UserNotFoundException e) {
-			responseEntity = new ResponseEntity<>("User Not Found " + e.getMessage() + " ", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<String>("{ \"message\": \"" + e.getMessage() + "\"}", HttpStatus.NOT_FOUND);
 		}
-
-		return responseEntity;
 	}
+
 }

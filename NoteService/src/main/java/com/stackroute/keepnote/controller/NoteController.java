@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +20,9 @@ import com.stackroute.keepnote.exception.NoteNotFoundExeption;
 import com.stackroute.keepnote.model.Note;
 import com.stackroute.keepnote.service.NoteService;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+
 /*
  * As in this assignment, we are working with creating RESTful web service, hence annotate
  * the class with @RestController annotation.A class annotated with @Controller annotation
@@ -27,6 +32,9 @@ import com.stackroute.keepnote.service.NoteService;
  * is equivalent to using @Controller and @ResposeBody annotation
  */
 @RestController
+//@CrossOrigin(origins = "http://localhost:3000/note")
+//@CrossOrigin(origins = "*")
+@Api
 @RequestMapping("/api/v1/note")
 public class NoteController {
 
@@ -35,9 +43,9 @@ public class NoteController {
 	 * autowiring) Please note that we should not create any object using the new
 	 * keyword
 	 */
-	private NoteService noteService;
-
 	@Autowired
+	NoteService noteService;
+
 	public NoteController(NoteService noteService) {
 		this.noteService = noteService;
 	}
@@ -53,18 +61,17 @@ public class NoteController {
 	 * This handler method should map to the URL "/api/v1/note" using HTTP POST
 	 * method
 	 */
+	//@CrossOrigin(origins = "*")
+	@ApiOperation(value = "Create Note")
 	@PostMapping()
-	public ResponseEntity addNote(@RequestBody Note note) {
-
-		ResponseEntity responseEntity = null;
-
+	public ResponseEntity<?> addNote(@RequestBody Note note) {
 		if (noteService.createNote(note)) {
-			responseEntity = new ResponseEntity(note, HttpStatus.CREATED);
+			return new ResponseEntity<Note>(note, HttpStatus.CREATED);
 		} else {
-			responseEntity = new ResponseEntity("Unable to create Note", HttpStatus.CONFLICT);
+			return new ResponseEntity<String>("Oops something went wrong !! try again", HttpStatus.CONFLICT);
 		}
-
-		return responseEntity;
+		
+		
 	}
 
 	/*
@@ -76,30 +83,26 @@ public class NoteController {
 	 * This handler method should map to the URL "/api/v1/note/{id}" using HTTP
 	 * Delete method" where "id" should be replaced by a valid noteId without {}
 	 */
+	@ApiOperation(value = "Delete a note by a user")
 	@DeleteMapping("/{userId}/{id}")
-	public ResponseEntity deleteNote(@PathVariable String userId, @PathVariable() int id) {
-		ResponseEntity responseEntity = null;
-
+	public ResponseEntity<String> deleteNote(@PathVariable String userId, @PathVariable() int id) {
 		if (noteService.deleteNote(userId, id)) {
-			responseEntity = new ResponseEntity<>("Successfully deleted Note", HttpStatus.OK);
+			return new ResponseEntity<String>("Successfully deleted Note", HttpStatus.OK);
 		} else {
-			responseEntity = new ResponseEntity<>("Unable to delete Note", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<String>("Unable to purge please try again", HttpStatus.NOT_FOUND);
 		}
-		return responseEntity;
 	}
-
+	
+	
+	@ApiOperation(value = "Delete all notes by a user")
 	@DeleteMapping("/{userId}")
-	public ResponseEntity deleteAllNotes(@PathVariable() String userId) {
-
-		ResponseEntity<?> responseEntity = null;
-
+	public ResponseEntity<String> deleteAllNotes(@PathVariable() String userId) {
 		try {
 			noteService.deleteAllNotes(userId);
-			responseEntity = new ResponseEntity<>("Successfully deleted all notes for user: " + userId, HttpStatus.OK);
+			return new ResponseEntity<String>("Successfully deleted all notes", HttpStatus.OK);
 		} catch (NoteNotFoundExeption exception) {
-			responseEntity = new ResponseEntity<>("Unable to delete all notes", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<String>("Unable to purge please try again", HttpStatus.NOT_FOUND);
 		}
-		return responseEntity;
 	}
 
 	/*
@@ -112,19 +115,15 @@ public class NoteController {
 	 * This handler method should map to the URL "/api/v1/note/{id}" using HTTP PUT
 	 * method.
 	 */
+	@ApiOperation(value = "Update a User Note")
 	@PutMapping("/{userId}/{id}")
-	public ResponseEntity updateNote(@PathVariable() String userId, @PathVariable() int id, @RequestBody Note note) {
-
-		ResponseEntity responseEntity = null;
-
+	public ResponseEntity<?> updateNote(@PathVariable() String userId, @PathVariable() int id, @RequestBody Note note) {
 		try {
 			Note updatedNote = noteService.updateNote(note, id, userId);
-			responseEntity = new ResponseEntity<>(updatedNote, HttpStatus.OK);
+			return new ResponseEntity<Note>(updatedNote, HttpStatus.OK);
 		} catch (NoteNotFoundExeption e) {
-			responseEntity = new ResponseEntity(e.getMessage(), HttpStatus.NOT_FOUND);
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
-
-		return responseEntity;
 	}
 
 	/*
@@ -135,18 +134,15 @@ public class NoteController {
 	 * This handler method should map to the URL "/api/v1/note" using HTTP GET
 	 * method
 	 */
+	@ApiOperation(value = "Retrieve all notes by a User")
 	@GetMapping("/{userId}")
-	public ResponseEntity getAllNoteByUserId(@PathVariable() String userId) {
-		ResponseEntity responseEntity = null;
+	public ResponseEntity<?> getAllNoteByUserId(@PathVariable() String userId) {
 		List<Note> userNotes = noteService.getAllNoteByUserId(userId);
-
 		if (userNotes != null) {
-			responseEntity = new ResponseEntity(userNotes, HttpStatus.OK);
+			return new ResponseEntity<List<Note>>(userNotes, HttpStatus.OK);
 		} else {
-			responseEntity = new ResponseEntity<>("No Notes found in your list", HttpStatus.OK);
+			return new ResponseEntity<String>("You don't have any notes added in your list", HttpStatus.OK);
 		}
-
-		return responseEntity;
 	}
 
 	/*
@@ -159,17 +155,15 @@ public class NoteController {
 	 * replaced by a valid reminderId without {}
 	 * 
 	 */
+	@ApiOperation(value = "Retrieve a Note by a User")
 	@GetMapping("{userId}/{noteId}")
-	public ResponseEntity getNoteById(@PathVariable() String userId, @PathVariable() int noteId) {
-		ResponseEntity responseEntity = null;
+	public ResponseEntity<?> getNoteById(@PathVariable() String userId, @PathVariable() int noteId) {
 		try {
 			Note note = noteService.getNoteByNoteId(userId, noteId);
-			responseEntity = new ResponseEntity(note, HttpStatus.OK);
+			return new ResponseEntity<Note>(note, HttpStatus.OK);
 		} catch (NoteNotFoundExeption exception) {
-			System.out.println(111);
-			responseEntity = new ResponseEntity(exception.getMessage(), HttpStatus.NOT_FOUND);
+			return new ResponseEntity<String>(exception.getMessage(), HttpStatus.NOT_FOUND);
 		}
-		return responseEntity;
 	}
 
 }

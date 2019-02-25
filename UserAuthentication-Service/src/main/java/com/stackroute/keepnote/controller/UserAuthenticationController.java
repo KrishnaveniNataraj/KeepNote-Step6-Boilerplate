@@ -1,8 +1,6 @@
 package com.stackroute.keepnote.controller;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,16 +11,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.stackroute.keepnote.exception.UserAlreadyExistsException;
-import com.stackroute.keepnote.exception.UserIdAndPasswordMismatchException;
 import com.stackroute.keepnote.exception.UserNotFoundException;
-import com.stackroute.keepnote.exception.UserNullException;
 import com.stackroute.keepnote.model.User;
 import com.stackroute.keepnote.service.UserAuthenticationService;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-
-import com.stackroute.keepnote.jwt.SecurityTokenGenrator;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 /*
  * As in this assignment, we are working on creating RESTful web service, hence annotate
@@ -34,6 +30,7 @@ import com.stackroute.keepnote.jwt.SecurityTokenGenrator;
  */
 @RestController
 @RequestMapping("/api/v1/auth")
+@Api
 public class UserAuthenticationController {
 
 	/*
@@ -42,9 +39,10 @@ public class UserAuthenticationController {
 	 * using the new keyword
 	 */
 	@Autowired
-	private UserAuthenticationService authicationService;
+	UserAuthenticationService service;
 
 	public UserAuthenticationController(UserAuthenticationService authicationService) {
+		this.service = authicationService;
 	}
 
 	/*
@@ -58,21 +56,15 @@ public class UserAuthenticationController {
 	 * This handler method should map to the URL "/api/v1/auth/register" using HTTP
 	 * POST method
 	 */
+	@ApiOperation(value = "Create a User and Register")
 	@PostMapping("/register")
-	public ResponseEntity registerUser(@RequestBody User user) {
-
-		ResponseEntity responseEntity = null;
-
+	public ResponseEntity<String> register(@RequestBody User user) {
 		try {
-
-			authicationService.saveUser(user);
-			responseEntity = new ResponseEntity<String>("User registered successfully", HttpStatus.CREATED);
-
-		} catch (UserAlreadyExistsException exception) {
-			responseEntity = new ResponseEntity<String>("User already exists", HttpStatus.CONFLICT);
+			service.saveUser(user);
+			return new ResponseEntity<String>("Created", HttpStatus.CREATED);
+		} catch (UserAlreadyExistsException e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.CONFLICT);
 		}
-
-		return responseEntity;
 	}
 
 	/*
@@ -90,73 +82,24 @@ public class UserAuthenticationController {
 	 * This handler method should map to the URL "/api/v1/auth/login" using HTTP
 	 * POST method
 	 */
+	@ApiOperation(value = "Login with User")
 	@PostMapping("/login")
-	public ResponseEntity loginUser(@RequestBody User loginUserDetails) {
-
+	public ResponseEntity<String> login(@RequestBody User user) {
 		try {
-
-			String userId = loginUserDetails.getUserId();
-			String password = loginUserDetails.getUserPassword();
-
-			if (userId == null || password == null) {
-				throw new UserNullException("Userid and Password cannot be empty");
-			}
-
-			User user = authicationService.findByUserIdAndPassword(userId, password);
-
-			if (user == null) {
-				throw new UserNotFoundException("User with given Id does not exists");
-			}
-
-			String fetchedPassword = user.getUserPassword();
-			if (!password.equals(fetchedPassword)) {
-				throw new UserIdAndPasswordMismatchException(
-						"Invalid login credential, Please check username and password ");
-			}
-
-			// generating token via functional interface - Start
-			SecurityTokenGenrator securityTokenGenrator = (User userDetails) -> {
-
-				String jwtToken = "";
-				jwtToken = Jwts.builder().setId(user.getUserId()).setSubject(user.getUserRole()).setIssuedAt(new Date())
-						.signWith(SignatureAlgorithm.HS256, "secretkey").compact();
-
-				Map<String, String> map1 = new HashMap<>();
-				map1.put("token", jwtToken);
-				map1.put("message", "User successfully logged in");
-				return map1;
-			};
-
-			Map<String, String> jwtMap = securityTokenGenrator.generateToken(user);
-			// generating token via functional interface - End
-
-			// generating token in normal way - Start
-			Map<String, String> jwtTokenMap = new HashMap<>();
-
-			try {
-				String jwtToken = getToken(user.getUserId(), user.getUserPassword());
-				jwtTokenMap.put("token", jwtToken);
-				jwtTokenMap.put("message", "User successfully logged in");
-			} catch (Exception excp) {
-				return new ResponseEntity<>("Error while getting JWT token " + excp.getMessage() + " ",
-						HttpStatus.UNAUTHORIZED);
-			}
-			// generating token in normal way - End
-
-			return new ResponseEntity<>(jwtTokenMap, HttpStatus.OK);
-
-		} catch (UserNullException | UserNotFoundException | UserIdAndPasswordMismatchException exception) {
-
-			return new ResponseEntity<>("Error " + exception.getMessage() + " ", HttpStatus.UNAUTHORIZED);
+			service.findByUserIdAndPassword(user.getUserId(), user.getUserPassword());
+			return new ResponseEntity<String>(getToken(user.getUserId(), user.getUserPassword()), HttpStatus.OK);
+		} catch (UserNotFoundException e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+		} catch (Exception e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
 		}
-
 	}
 
-// Generate JWT token
-	public String getToken(String username, String password) throws Exception {
-
-		return Jwts.builder().setId(username).setSubject(password).setIssuedAt(new Date())
+	// Generate JWT token
+	public String getToken(String userId, String password) throws Exception {
+		return Jwts.builder().setId(userId).setSubject(password).setIssuedAt(new Date())
 				.signWith(SignatureAlgorithm.HS256, "secretkey").compact();
+
 	}
 
 }

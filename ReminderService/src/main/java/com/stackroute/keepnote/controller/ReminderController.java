@@ -19,6 +19,9 @@ import com.stackroute.keepnote.exception.ReminderNotFoundException;
 import com.stackroute.keepnote.model.Reminder;
 import com.stackroute.keepnote.service.ReminderService;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+
 /*
  * As in this assignment, we are working with creating RESTful web service, hence annotate
  * the class with @RestController annotation.A class annotated with @Controller annotation
@@ -27,8 +30,10 @@ import com.stackroute.keepnote.service.ReminderService;
  * format. Starting from Spring 4 and above, we can use @RestController annotation which 
  * is equivalent to using @Controller and @ResposeBody annotation
  */
+
 @RestController
 @RequestMapping("/api/v1/reminder")
+@Api
 public class ReminderController {
 
 	/*
@@ -36,8 +41,11 @@ public class ReminderController {
 	 * us to implement five functionalities regarding reminder. They are as
 	 * following:
 	 * 
-	 * 1. Create a reminder 2. Delete a reminder 3. Update a reminder 4. Get all
-	 * reminders by userId 5. Get a specific reminder by id.
+	 * 1. Create a reminder 
+	 * 2. Delete a reminder 
+	 * 3. Update a reminder 
+	 * 4. Get all reminders by userId 
+	 * 5. Get a specific reminder by id.
 	 * 
 	 */
 
@@ -46,12 +54,12 @@ public class ReminderController {
 	 * Constructor-based autowiring) Please note that we should not create any
 	 * object using the new keyword
 	 */
-	private ReminderService reminderService;
-
+	
 	@Autowired
-	public ReminderController(ReminderService reminderService) {
-		this.reminderService = reminderService;
+	ReminderService service;
 
+	public ReminderController(ReminderService reminderService) {
+		this.service=reminderService;
 	}
 
 	/*
@@ -59,124 +67,101 @@ public class ReminderController {
 	 * Serialized reminder object from request body and save the reminder in
 	 * database. Please note that the reminderId has to be unique. This handler
 	 * method should return any one of the status messages basis on different
-	 * situations: 1. 201(CREATED - In case of successful creation of the reminder
+	 * situations: 
+	 * 1. 201(CREATED - In case of successful creation of the reminder
 	 * 2. 409(CONFLICT) - In case of duplicate reminder ID
 	 *
 	 * This handler method should map to the URL "/api/v1/reminder" using HTTP POST
 	 * method".
 	 */
+	@ApiOperation(value = "Create a Reminder")
 	@PostMapping
-	public ResponseEntity createReminder(@RequestBody Reminder reminder) {
-
-		ResponseEntity responseEntity = null;
-
+	public ResponseEntity<?> create(@RequestBody Reminder reminder) {
 		try {
-			reminderService.createReminder(reminder);
-			responseEntity = new ResponseEntity(reminder, HttpStatus.CREATED);
+			service.createReminder(reminder);
+			return new ResponseEntity<String>("Created", HttpStatus.CREATED);
 		} catch (ReminderNotCreatedException e) {
-			responseEntity = new ResponseEntity("Unable to create Reminder", HttpStatus.CONFLICT);
+			return new ResponseEntity<String>("Conflict", HttpStatus.CONFLICT);
 		}
-
-		return responseEntity;
 	}
 
 	/*
 	 * Define a handler method which will delete a reminder from a database.
 	 * 
 	 * This handler method should return any one of the status messages basis on
-	 * different situations: 1. 200(OK) - If the reminder deleted successfully from
-	 * database. 2. 404(NOT FOUND) - If the reminder with specified reminderId is
-	 * not found.
+	 * different situations: 
+	 * 1. 200(OK) - If the reminder deleted successfully from database. 
+	 * 2. 404(NOT FOUND) - If the reminder with specified reminderId is not found.
 	 * 
-	 * This handler method should map to the URL "/api/v1/reminder/{id}" using HTTP
-	 * Delete method" where "id" should be replaced by a valid reminderId without {}
+	 * This handler method should map to the URL "/api/v1/reminder/{id}" using HTTP Delete
+	 * method" where "id" should be replaced by a valid reminderId without {}
 	 */
-	@DeleteMapping("/{reminderId}")
-	public ResponseEntity deleteReminder(@PathVariable() String reminderId) {
-
-		ResponseEntity responseEntity = null;
-
+	@ApiOperation(value = "Delete a Reminder")
+	@DeleteMapping("{id}")
+	public ResponseEntity<?> delete(@PathVariable String id) {
 		try {
-			reminderService.deleteReminder(reminderId);
-			responseEntity = new ResponseEntity("Reminder Deleted Successfully", HttpStatus.OK);
-		} catch (ReminderNotFoundException exception) {
-			responseEntity = new ResponseEntity(exception.getMessage(), HttpStatus.NOT_FOUND);
+			service.deleteReminder(id);
+			return new ResponseEntity<String>("deleted", HttpStatus.OK);
+		} catch (ReminderNotFoundException e) {
+			return new ResponseEntity<String>("Not Found", HttpStatus.NOT_FOUND);
 		}
-
-		return responseEntity;
 	}
 
 	/*
 	 * Define a handler method which will update a specific reminder by reading the
 	 * Serialized object from request body and save the updated reminder details in
 	 * a database. This handler method should return any one of the status messages
-	 * basis on different situations: 1. 200(OK) - If the reminder updated
-	 * successfully. 2. 404(NOT FOUND) - If the reminder with specified reminderId
-	 * is not found.
+	 * basis on different situations: 
+	 * 1. 200(OK) - If the reminder updated successfully. 
+	 * 2. 404(NOT FOUND) - If the reminder with specified reminderId is not found. 
 	 * 
-	 * This handler method should map to the URL "/api/v1/reminder/{id}" using HTTP
-	 * PUT method.
+	 * This handler method should map to the URL "/api/v1/reminder/{id}" using HTTP PUT
+	 * method.
 	 */
-	@PutMapping("/{reminderId}")
-	public ResponseEntity updateReminder(@PathVariable() String reminderId, @RequestBody Reminder reminder) {
-
-		ResponseEntity responseEntity = null;
-
+	@ApiOperation(value = "Update a Reminder")
+	@PutMapping("{id}")
+	public ResponseEntity<?> update(@RequestBody Reminder reminder, @PathVariable String id) {
 		try {
-
-			Reminder updatedReminder = reminderService.updateReminder(reminder, reminderId);
-			responseEntity = new ResponseEntity(updatedReminder, HttpStatus.OK);
-		} catch (ReminderNotFoundException exception) {
-			responseEntity = new ResponseEntity("Unable to update Reminder", HttpStatus.NOT_FOUND);
-		}
-
-		return responseEntity;
+			return new ResponseEntity<Reminder>(service.updateReminder(reminder, id), HttpStatus.OK);
+		} catch (ReminderNotFoundException e) {
+			return new ResponseEntity<String>(": not found", HttpStatus.NOT_FOUND);
+		}		
 	}
 
 	/*
 	 * Define a handler method which will show details of a specific reminder. This
 	 * handler method should return any one of the status messages basis on
-	 * different situations: 1. 200(OK) - If the reminder found successfully. 2.
-	 * 404(NOT FOUND) - If the reminder with specified reminderId is not found.
+	 * different situations: 
+	 * 1. 200(OK) - If the reminder found successfully. 
+	 * 2. 404(NOT FOUND) - If the reminder with specified reminderId is not found. 
 	 * 
-	 * This handler method should map to the URL "/api/v1/reminder/{id}" using HTTP
-	 * GET method where "id" should be replaced by a valid reminderId without {}
+	 * This handler method should map to the URL "/api/v1/reminder/{id}" using HTTP GET method
+	 * where "id" should be replaced by a valid reminderId without {}
 	 */
-	@GetMapping("/{reminderId}")
-	public ResponseEntity getReminderById(@PathVariable() String reminderId) {
-
-		ResponseEntity responseEntity = null;
-
+	@ApiOperation(value = "Retrieve a Reminder")
+	@GetMapping("{id}")
+	public ResponseEntity<?> getById(@PathVariable String id) {
 		try {
-			Reminder fetchedReminder = reminderService.getReminderById(reminderId);
-			responseEntity = new ResponseEntity(fetchedReminder, HttpStatus.OK);
-		} catch (ReminderNotFoundException exception) {
-			responseEntity = new ResponseEntity(exception.getMessage(), HttpStatus.NOT_FOUND);
+			Reminder reminder = service.getReminderById(id);
+			return new ResponseEntity<Reminder>(reminder, HttpStatus.OK);
+		} catch (ReminderNotFoundException e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
-
-		return responseEntity;
 	}
+	
 
 	/*
-	 * Define a handler method which will get us the all reminders. This handler
-	 * method should return any one of the status messages basis on different
-	 * situations: 1. 200(OK) - If the reminder found successfully. 2. 404(NOT
-	 * FOUND) - If the reminder with specified reminderId is not found.
+	 * Define a handler method which will get us the all reminders.
+	 * This handler method should return any one of the status messages basis on
+	 * different situations: 
+	 * 1. 200(OK) - If the reminder found successfully. 
+	 * 2. 404(NOT FOUND) - If the reminder with specified reminderId is not found.
 	 * 
-	 * This handler method should map to the URL "/api/v1/reminder" using HTTP GET
-	 * method
+	 * This handler method should map to the URL "/api/v1/reminder" using HTTP GET method
 	 */
-	@GetMapping()
-	public ResponseEntity getAllReminderById() {
-
-		ResponseEntity responseEntity = null;
-		List<Reminder> allReminders = reminderService.getAllReminders();
-		if (!allReminders.isEmpty()) {
-			responseEntity = new ResponseEntity(allReminders, HttpStatus.OK);
-		} else {
-			responseEntity = new ResponseEntity("No Reminders to show", HttpStatus.NOT_FOUND);
-		}
-
-		return responseEntity;
+	@ApiOperation(value = "Retrieve all Reminders")
+	@GetMapping
+	public ResponseEntity<?> get() {
+		return new ResponseEntity<List<Reminder>>(service.getAllReminders(), HttpStatus.OK);
 	}
 }

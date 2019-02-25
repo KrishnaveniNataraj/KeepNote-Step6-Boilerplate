@@ -28,28 +28,27 @@ public class UserServiceImpl implements UserService {
 	 * Constructor-based autowiring) Please note that we should not create any
 	 * object using the new keyword.
 	 */
-	private UserRepository userRepository;
-
-	@Autowired
-	public UserServiceImpl(UserRepository userRepository) {
-		this.userRepository = userRepository;
-	}
 
 	/*
 	 * This method should be used to save a new user.Call the corresponding method
 	 * of Respository interface.
 	 */
-	@Override
+	@Autowired
+	UserRepository repository;
+
+	public UserServiceImpl(UserRepository repository) {
+		this.repository = repository;
+	}
+
 	public User registerUser(User user) throws UserAlreadyExistsException {
 		User savedUser = null;
-		if (userRepository.existsById(user.getUserId())) {
-			throw new UserAlreadyExistsException("User with ID " + user.getUserId() + " already exists");
+		if (repository.existsById(user.getUserId())) {
+			throw new UserAlreadyExistsException("User with ID" + user.getUserId() + "already exists");
 		} else {
 			user.setUserAddedDate(new Date());
-
-			savedUser = userRepository.insert(user);
+			savedUser = repository.insert(user);
 			if (savedUser == null) {
-				throw new UserAlreadyExistsException("User with ID " + user.getUserId() + " already exists");
+				throw new UserAlreadyExistsException("User with ID" + user.getUserId() + "already exists");
 			}
 		}
 		return savedUser;
@@ -59,20 +58,21 @@ public class UserServiceImpl implements UserService {
 	 * This method should be used to update a existing user.Call the corresponding
 	 * method of Respository interface.
 	 */
-	@Override
+
 	public User updateUser(String userId, User user) throws UserNotFoundException {
 
 		try {
-			User fecthedUser = userRepository.findById(userId).get();
+			User fecthedUser = repository.findById(userId).get();
 			fecthedUser.setUserName(user.getUserName());
 			fecthedUser.setUserMobile(user.getUserMobile());
 			fecthedUser.setUserPassword(user.getUserPassword());
 			fecthedUser.setUserId(user.getUserId());
 
-			userRepository.save(fecthedUser);
+			repository.save(fecthedUser);
 			return fecthedUser;
 
 		} catch (NoSuchElementException exception) {
+
 			throw new UserNotFoundException("User does not exists");
 		}
 
@@ -82,32 +82,30 @@ public class UserServiceImpl implements UserService {
 	 * This method should be used to delete an existing user. Call the corresponding
 	 * method of Respository interface.
 	 */
-	@Override
+
 	public boolean deleteUser(String userId) throws UserNotFoundException {
-		boolean userDeleted = false;
+		boolean status = false;
 		try {
-			User fecthedUser = userRepository.findById(userId).get();
-
+			User fecthedUser = repository.findById(userId).get();
 			if (fecthedUser != null) {
-				userRepository.delete(fecthedUser);
-				userDeleted = true;
+				repository.delete(fecthedUser);
+				status = true;
 			}
-
 		} catch (NoSuchElementException exception) {
-			throw new UserNotFoundException("User does not exists to delete for " + userId);
+			throw new UserNotFoundException("User does not exists");
 		}
-		return userDeleted;
+		return status;
 	}
 
 	/*
 	 * This method should be used to get a user by userId.Call the corresponding
 	 * method of Respository interface.
 	 */
-	@Override
+
 	public User getUserById(String userId) throws UserNotFoundException {
-		User fecthedUser = userRepository.findById(userId).get();
+		User fecthedUser = repository.findById(userId).get();
 		if (fecthedUser == null) {
-			throw new UserNotFoundException("User does not exists " + userId);
+			throw new UserNotFoundException("User does not exists");
 		}
 		return fecthedUser;
 	}

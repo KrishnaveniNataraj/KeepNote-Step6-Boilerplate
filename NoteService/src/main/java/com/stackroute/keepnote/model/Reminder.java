@@ -2,6 +2,10 @@ package com.stackroute.keepnote.model;
 
 import java.util.Date;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document
 public class Reminder {
 
 	/*
@@ -14,6 +18,7 @@ public class Reminder {
 	 * date.
 	 */
 
+	@Id
 	private String reminderId;
 	private String reminderName;
 	private String reminderDescription;

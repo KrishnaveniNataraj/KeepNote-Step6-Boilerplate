@@ -21,11 +21,11 @@ public class ReminderServiceApplication {
 	 * Also specifies the Url patterns for registration bean.
 	 */
 	@Bean
-	public FilterRegistrationBean jwtFilter() {
-		final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
-		registrationBean.setFilter(new JwtFilter());
-		registrationBean.addUrlPatterns("/api/v1/*");
-		return registrationBean;
+	public FilterRegistrationBean<JwtFilter> jwtFilter() {
+		FilterRegistrationBean<JwtFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+		filterRegistrationBean.setFilter(new JwtFilter());
+		filterRegistrationBean.addUrlPatterns("/api/v1/*");
+		return filterRegistrationBean;
 	}
 
 	/*

@@ -3,8 +3,11 @@ package com.stackroute.keepnote.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,13 +15,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import com.stackroute.keepnote.config.SwaggerConfig;
 import com.stackroute.keepnote.exception.CategoryDoesNoteExistsException;
 import com.stackroute.keepnote.exception.CategoryNotCreatedException;
 import com.stackroute.keepnote.exception.CategoryNotFoundException;
 import com.stackroute.keepnote.model.Category;
 import com.stackroute.keepnote.service.CategoryService;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 /*
  * As in this assignment, we are working with creating RESTful web service, hence annotate
@@ -30,6 +39,7 @@ import com.stackroute.keepnote.service.CategoryService;
  */
 @RestController
 @RequestMapping("/api/v1/category")
+@Api
 public class CategoryController {
 
 	/*
@@ -37,13 +47,14 @@ public class CategoryController {
 	 * Constructor-based autowiring) Please note that we should not create any
 	 * object using the new keyword
 	 */
-	private CategoryService categoryService;
-
 	@Autowired
+	CategoryService categoryService;
+	
+	
 	public CategoryController(CategoryService categoryService) {
 		this.categoryService = categoryService;
 	}
-
+	
 	/*
 	 * Define a handler method which will create a category by reading the
 	 * Serialized category object from request body and save the category in
@@ -56,19 +67,23 @@ public class CategoryController {
 	 * This handler method should map to the URL "/api/v1/category" using HTTP POST
 	 * method".
 	 */
-	@PostMapping()
-	public ResponseEntity createCategory(@RequestBody Category category) {
-		ResponseEntity responseEntity = null;
+	@ApiOperation(value = "Create category")
+	@PostMapping(value = "/api/v1/category", produces = { MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<?> createCategory(@RequestBody Category category) {
+
 		try {
-			Category category1 = categoryService.createCategory(category);
-			responseEntity = new ResponseEntity(category1, HttpStatus.CREATED);
-
+			categoryService.createCategory(category);
+			return new ResponseEntity<String>("Created", HttpStatus.CREATED);
 		} catch (CategoryNotCreatedException e) {
-			responseEntity = new ResponseEntity(e.getMessage(), HttpStatus.CONFLICT);
+			return new ResponseEntity<String>("Conflict", HttpStatus.CONFLICT);
 		}
-
-		return responseEntity;
 	}
+	
+	/*@GetMapping("/api/v1/category")
+	public ResponseEntity<?> getAllCategories() {
+		List<Category> category = categoryService.getAllCategory();
+		return new ResponseEntity<>(category,HttpStatus.CREATED);
+	}*/
 
 	/*
 	 * Define a handler method which will delete a category from a database.
@@ -81,16 +96,15 @@ public class CategoryController {
 	 * This handler method should map to the URL "/api/v1/category/{id}" using HTTP
 	 * Delete method" where "id" should be replaced by a valid categoryId without {}
 	 */
-	@DeleteMapping("/{categoryId}")
-	public ResponseEntity deleteCategory(@PathVariable() String categoryId) {
-		ResponseEntity responseEntity = null;
+	@ApiOperation(value = "Delete category")
+	@DeleteMapping("/api/v1/category/{id}")
+	public ResponseEntity<?> delete(@PathVariable String id) {
 		try {
-			categoryService.deleteCategory(categoryId);
-			responseEntity = new ResponseEntity("Category Deleted Successfully", HttpStatus.OK);
+			categoryService.deleteCategory(id);
+			return new ResponseEntity<String>("Category deleted", HttpStatus.OK);
 		} catch (CategoryDoesNoteExistsException e) {
-			responseEntity = new ResponseEntity(e.getMessage(), HttpStatus.NOT_FOUND);
+			return new ResponseEntity<String>("Category Not Found", HttpStatus.NOT_FOUND);
 		}
-		return responseEntity;
 	}
 
 	/*
@@ -102,17 +116,15 @@ public class CategoryController {
 	 * is not found. This handler method should map to the URL
 	 * "/api/v1/category/{id}" using HTTP PUT method.
 	 */
-	@PutMapping("/{categoryId}")
-	public ResponseEntity updateCategory(@PathVariable String categoryId, @RequestBody Category category) {
-		ResponseEntity responseEntity = null;
-		Category updateCategory = categoryService.updateCategory(category, categoryId);
-		if (updateCategory != null) {
-			responseEntity = new ResponseEntity(updateCategory, HttpStatus.OK);
-
+	@ApiOperation(value = "Update category")
+	@PutMapping("/api/v1/category/{id}")
+	public ResponseEntity<?> update(@RequestBody Category category, @PathVariable String id) {
+		Category cat = categoryService.updateCategory(category, id);
+		if (cat == null) {
+			return new ResponseEntity<String>(category.getCategoryName() + ": not found", HttpStatus.CONFLICT);
 		} else {
-			responseEntity = new ResponseEntity("Unable to update Category", HttpStatus.CONFLICT);
+			return new ResponseEntity<Category>(cat, HttpStatus.OK);
 		}
-		return responseEntity;
 	}
 
 	/*
@@ -125,32 +137,30 @@ public class CategoryController {
 	 * This handler method should map to the URL "/api/v1/category" using HTTP GET
 	 * method
 	 */
-	@GetMapping("/{categoryId}")
-	public ResponseEntity getCategoryById(@PathVariable String categoryId) {
-		ResponseEntity responseEntity = null;
-		try {
-
-			Category fetchedCategory = categoryService.getCategoryById(categoryId);
-			responseEntity = new ResponseEntity(fetchedCategory, HttpStatus.OK);
-
-		} catch (CategoryNotFoundException e) {
-			responseEntity = new ResponseEntity(e.getMessage(), HttpStatus.NOT_FOUND);
-		}
-
-		return responseEntity;
-	}
-
-	@GetMapping("/user/{userId}")
-	public ResponseEntity getAllCategoryByUserId(@PathVariable String userId) {
-		ResponseEntity responseEntity = null;
+	@ApiOperation(value = "Get category of a user")
+	@GetMapping("/api/v1/user/{userId}")
+	public ResponseEntity<?> getAllCategoryByUserId(@PathVariable String userId) {
 		List<Category> allCategory = categoryService.getAllCategoryByUserId(userId);
 		if (allCategory != null) {
-			responseEntity = new ResponseEntity(allCategory, HttpStatus.OK);
+			return new ResponseEntity<List<Category>>(allCategory, HttpStatus.OK);
 		} else {
-			responseEntity = new ResponseEntity("Error in loading all Category", HttpStatus.CONFLICT);
+			return new ResponseEntity<String>("Error in loading the content", HttpStatus.CONFLICT);
 		}
-
-		return responseEntity;
 	}
+
+	@GetMapping("/api/v1/category/{categoryId}")
+	public ResponseEntity<?> getCategoryById(@PathVariable String categoryId) {
+		try {
+			Category fetchedCategory = categoryService.getCategoryById(categoryId);
+			return new ResponseEntity<Category>(fetchedCategory, HttpStatus.OK);
+		} catch (CategoryNotFoundException e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
+		}
+	}
+	
+	
+	
+	
+	 
 
 }

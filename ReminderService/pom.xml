@@ -12,7 +12,7 @@
 	<description> project for Spring Boot  Reminder service</description>
 
 	<parent>
-		<artifactId>KeepNote-Step-6-Solution</artifactId>
+		<artifactId>KeepNote-Step-6-Boilerplate</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 		<groupId>com.stackroute.keepnote</groupId>
 	</parent>

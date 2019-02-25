@@ -2,7 +2,7 @@
 <!DOCTYPE xml>
 <configuration debug="true">
 	<property name="LOG_FILE_LOCATION" value="logs" />
-	<property name="LOG_FILE_NAME" value="UserService" />
+	<property name="LOG_FILE_NAME" value="KeepNote" />
 	<property name="LOG_FILE_EXTENSION" value=".log" />
 	<timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss"
 		timeReference="contextBirth" />

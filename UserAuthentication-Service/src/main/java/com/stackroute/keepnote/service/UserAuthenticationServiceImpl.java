@@ -18,8 +18,8 @@ import com.stackroute.keepnote.repository.UserAutheticationRepository;
 * to use @Service over @Component in service-layer classes because it specifies intent 
 * better. Additionally, tool support and additional behavior might rely on it in the 
 * future.
-* 
-*/
+* */
+
 @Service
 public class UserAuthenticationServiceImpl implements UserAuthenticationService {
 
@@ -29,7 +29,11 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
 	 * object using the new keyword.
 	 */
 	@Autowired
-	private UserAutheticationRepository authenticationRepository;
+	UserAutheticationRepository repository;
+
+	public UserAuthenticationServiceImpl(UserAutheticationRepository repository) {
+		this.repository = repository;
+	}
 
 	/*
 	 * This method should be used to validate a user using userId and password. Call
@@ -38,10 +42,9 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
 	 */
 	@Override
 	public User findByUserIdAndPassword(String userId, String password) throws UserNotFoundException {
-
-		User user = authenticationRepository.findByUserIdAndUserPassword(userId, password);
-		if (user == null) {
-			throw new UserNotFoundException("UserId and Password are not correct");
+		User user=repository.findByUserIdAndUserPassword(userId, password);
+		if(user ==null) {
+			throw new UserNotFoundException("User is not found");
 		}
 		return user;
 	}
@@ -50,13 +53,14 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
 	 * This method should be used to save a new user.Call the corresponding method
 	 * of Respository interface.
 	 */
+
 	@Override
 	public boolean saveUser(User user) throws UserAlreadyExistsException {
-		Optional<User> fetchedUser = authenticationRepository.findById(user.getUserId());
-		if (fetchedUser.isPresent()) {
-			throw new UserAlreadyExistsException("User with Id already exists");
+		Optional<User> optional=repository.findById(user.getUserId());
+		if(optional.isPresent()){
+			throw new UserAlreadyExistsException("user already exist");
 		}
-		authenticationRepository.save(user);
-		return true;
+		repository.save(user);
+		return Boolean.TRUE;
 	}
 }

@@ -18,28 +18,34 @@ public class NoteUser {
 	 * the getters and setters for the fields.
 	 */
 
-	@Id
-	private String userId;
-	private List<Note> notes;
+    
 
-	public String getUserId() {
-		return userId;
-	}
+    @Id
+    private String userId;
+    private List<Note> notes;
 
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
 
-	public List<Note> getNotes() {
-		return notes;
-	}
+    public String getUserId() {
+        return userId;
+    }
 
-	public void setNotes(List<Note> notes) {
-		this.notes = notes;
-	}
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
-	@Override
-	public String toString() {
-		return "NoteUser{" + "userId='" + userId + '\'' + ", notes=" + notes + '}';
-	}
+    public List<Note> getNotes() {
+        return notes;
+    }
+
+    public void setNotes(List<Note> notes) {
+        this.notes = notes;
+    }
+
+    @Override
+    public String toString() {
+        return "NoteUser{" +
+                "userId='" + userId + '\'' +
+                ", notes=" + notes +
+                '}';
+    }
 }

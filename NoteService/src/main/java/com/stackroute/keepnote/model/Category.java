@@ -2,6 +2,10 @@ package com.stackroute.keepnote.model;
 
 import java.util.Date;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document
 public class Category {
 
 	/*
@@ -13,6 +17,7 @@ public class Category {
 	 * always initialized with the system date.
 	 */
 
+	@Id
 	private String categoryId;
 	private String categoryName;
 	private String categoryDescription;
@@ -65,5 +70,4 @@ public class Category {
 				+ ", categoryDescription='" + categoryDescription + '\'' + ", categoryCreatedBy='" + categoryCreatedBy
 				+ '\'' + ", categoryCreationDate=" + categoryCreationDate + '}';
 	}
-
 }
